@@ -1,0 +1,14 @@
+{
+  "LogicalResourceId" :  "MyCustomResource2",
+  "RequestId" :  "8c766df7-88f6-4110-8f2f-dab90ef61d44",
+  "RequestType" :  "Create",
+  "ResourceProperties" :  {
+    "MyCustomResource" :  "My Custom Resource",
+    "MyCustomRole" :  "My Custom Role",
+    "ServiceToken" :  "arn:aws:sns:ap-southeast-2:860641959456:ladon-custom-resource-provision"
+  },
+  "ResourceType" :  "Custom::Eddo",
+  "ResponseURL" :  "https://cloudformation-custom-resource-response-apsoutheast2.s3-ap-southeast-2.amazonaws.com/arn%3Aaws%3Acloudformation%3Aap-southeast-2%3A860641959456%3Astack/ladon-20141211155854/745a8d90-80f2-11e4-83f1-506726f1bb9a%7CMyCustomResource2%7C8c766df7-88f6-4110-8f2f-dab90ef61d44?AWSAccessKeyId=AKIAIHAPE667K7RJ3ENQ&Expires=1418281160&Signature=%2B0uINXfu23gB5dfAvNYmhPLgbf0%3D",
+  "StackId" :  "arn:aws:cloudformation:ap-southeast-2:860641959456:stack/ladon-20141211155854/745a8d90-80f2-11e4-83f1-506726f1bb9a",
+  "TopicArn" :  "arn:aws:sns:ap-southeast-2:860641959456:ladon-custom-resource-provision"
+}

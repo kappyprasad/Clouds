@@ -1,0 +1,44 @@
+{
+  "AWSTemplateFormatVersion" :  "2010-09-09",
+  "Description" :  "My Custom Ladon Resource Template",
+  "Parameters" :  {
+  },
+  "Resources" :  {
+    "MyCustomResource1" :  {
+      "Type" :  "AWS::CloudFormation::CustomResource",
+      "Properties" :  {
+        "ServiceToken" : "arn:aws:sns:ap-southeast-2:860641959456:ladon-custom-resource-provision",
+        "MyCustomRole" :  "My Custom Role",
+        "MyCustomResource" : "My Custom Resource"
+      }
+    },
+    "MyCustomResource2" :  {
+      "Type" :  "Custom::Eddo",
+      "Properties" :  {
+        "ServiceToken" : "arn:aws:sns:ap-southeast-2:860641959456:ladon-custom-resource-provision",
+        "MyCustomRole" :  "My Custom Role",
+        "MyCustomResource" : "My Custom Resource"
+      }
+    }
+  },
+  "Outputs" :  {
+    "MyCustomResource1Arn" :  {
+      "Description" :  "My Custom 1 Ladon resource Item",
+      "Value" :  {
+        "Fn::GetAtt" :  [
+          "MyCustomResource1",
+          "Arn"
+        ]
+      }
+    },
+    "MyCustomResource2Arn" :  {
+      "Description" :  "My Custom 2 Ladon resource Item",
+      "Value" :  {
+        "Fn::GetAtt" :  [
+          "MyCustomResource2",
+          "Arn"
+        ]
+      }
+    }
+  }
+}
