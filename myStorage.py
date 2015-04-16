@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import sys, re, os, argparse, uuid, time, datetime, pytz
+import sys, re, os, argparse, uuid, time, json, datetime, pytz
 from datetime import datetime
 
 import boto.s3
@@ -8,7 +8,6 @@ import boto.s3
 from boto.s3.connection import S3Connection
 from boto.s3.bucket import Bucket
 from boto.s3.key import Key 
-from _tools.pretty import prettyPrint
 
 # http://boto.readthedocs.org/en/latest/sqs_tut.html
 
@@ -30,7 +29,7 @@ args = parser.parse_args()
 
 if args.verbose:
     sys.stderr.write('args:\n')
-    prettyPrint(vars(args), colour=True, output=sys.stderr)
+    json.dump(vars(args), sys.stderr, indent=4)
 
 class MyStorage(object):
 
