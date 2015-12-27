@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 
 import sys, re, os, argparse, json, yaml, xmltodict, uuid, time, pytz
 from datetime import datetime

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python
 
 from jsonweb.decode import from_object, loader
 from jsonweb.encode import to_object, dumper
