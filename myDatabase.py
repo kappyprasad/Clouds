@@ -2,7 +2,7 @@
 
 import sys, re, os, argparse, uuid, json
 
-from _tools.pretty import *
+from Tools.pretty import *
 
 import boto.dynamodb2
 from boto.dynamodb2.table import Table
