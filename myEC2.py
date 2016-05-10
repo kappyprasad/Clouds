@@ -9,22 +9,26 @@ from myAWS import MyObject
 
 # http://boto.readthedocs.org/en/latest/ec2_tut.html
 
-parser = argparse.ArgumentParser(description='David Edson\'s you beute EC2 testerer')
+def argue():
+    parser = argparse.ArgumentParser(description='David Edson\'s you beute EC2 testerer')
 
-parser.add_argument('-v', '--verbose',   action='store_true', help='show verbose detail')
-parser.add_argument(      '--awsKey',    action='store',      help='AWS user Key',      default=os.environ['AWS_KEY'])
-parser.add_argument(      '--awsSecret', action='store',      help='AWS secret Key',    default=os.environ['AWS_SECRET'])
-parser.add_argument('-z', '--zone',      action='store',      help='AWS Region',        default=os.environ['AWS_REGION'])
-parser.add_argument('-o', '--output',    action='store',      help='output to file')
-parser.add_argument('-d', '--dir',       action='store_true', help='full directory listing of targets')
-parser.add_argument('-t', '--tags',      action='store_true', help='show tags of targets')
-parser.add_argument('-i', '--id',        action='store',      help='id of instance, will be introspected if not provided')
-
-args = parser.parse_args()
-
-if args.verbose:
+    parser.add_argument('-v', '--verbose',   action='store_true', help='show verbose detail')
+    parser.add_argument(      '--awsKey',    action='store',      help='AWS user Key',      default=os.environ['AWS_KEY'])
+    parser.add_argument(      '--awsSecret', action='store',      help='AWS secret Key',    default=os.environ['AWS_SECRET'])
+    parser.add_argument('-z', '--zone',      action='store',      help='AWS Region',        default=os.environ['AWS_REGION'])
+    parser.add_argument('-o', '--output',    action='store',      help='output to file')
+    parser.add_argument('-d', '--dir',       action='store_true', help='full directory listing of targets')
+    parser.add_argument('-t', '--tags',      action='store_true', help='show tags of targets')
+    parser.add_argument('-i', '--id',        action='store',      help='id of instance, will be introspected if not provided')
+    
+    args = parser.parse_args()
+    
+    if args.verbose:
         sys.stderr.write('args : %s' % vars(args))
+            
+    return args
 
+####################################################################################################
 class MyEC2(MyObject):
 
     region = None
@@ -54,7 +58,6 @@ class MyEC2(MyObject):
                 '@id' : '%s'%i
             })
         return
-    
 
     def process(self):
         results = {
@@ -80,27 +83,31 @@ class MyEC2(MyObject):
             
     def add(self,instance):
         jnstance = {
-            '@name' : '%s'%instance.tags['Name'],
-            '@id' : '%s'%instance.id,
-            '@ami' : '%s'%instance.image_id,
+            '@name'         : '%s'%instance.tags['Name'],
+            '@id'           : '%s'%instance.id,
+            '@ami'          : '%s'%instance.image_id,
             '@architecture' : '%s'%instance.architecture,
-            '@public_dns' : '%s'%instance.public_dns_name,
-            '@type' : '%s'%instance.instance_type,
-            '@public_ip' : '%s'%instance.ip_address,
-            '@key_name' : '%s'%instance.key_name,
-            '@launch_time' : '%s'%instance.launch_time,
-            '@private_ip' : '%s'%instance.private_ip_address,
-            '@private_dns' : '%s'%instance.private_dns_name,
-            '@state' : '%s'%instance.state,
-            '@subnet_id' : '%s'%instance.subnet_id,
-            '@vpc_id' : '%s'%instance.vpc_id,
+            '@public_dns'   : '%s'%instance.public_dns_name,
+            '@type'         : '%s'%instance.instance_type,
+            '@public_ip'    : '%s'%instance.ip_address,
+            '@key_name'     : '%s'%instance.key_name,
+            '@launch_time'  : '%s'%instance.launch_time,
+            '@private_ip'   : '%s'%instance.private_ip_address,
+            '@private_dns'  : '%s'%instance.private_dns_name,
+            '@state'        : '%s'%instance.state,
+            '@subnet_id'    : '%s'%instance.subnet_id,
+            '@vpc_id'       : '%s'%instance.vpc_id,
         }
         self._dir(instance,jnstance)
         self._tags(instance,jnstance)
         self._interfaces(instance,jnstance)
         return jnstance
 
+####################################################################################################
 def main():
+    global args
+    args = argue()
+    
     myEC2 = MyEC2(
         args.zone, 
         args.awsKey, 
