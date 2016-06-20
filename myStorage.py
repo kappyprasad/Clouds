@@ -21,9 +21,9 @@ parser.add_argument('-b', '--bucket',  action='store',      help='The storage bu
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('-l', '--list',     action='store_true', help='list all buckets')
 group.add_argument('-d', '--dir',      action='store_true', help='directory of bucket')
-group.add_argument('-g', '--get',      action='store',      help='get file from bucket', nargs='*')
-group.add_argument('-p', '--put',      action='store',      help='put file in bucket',   nargs='*')
-
+group.add_argument('-k', '--klobber',  action='store',      help='klobber file in bucket', nargs='*')
+group.add_argument('-g', '--get',      action='store',      help='get file from bucket',   nargs='*')
+group.add_argument('-p', '--put',      action='store',      help='put file in bucket',     nargs='*')
 
 args = parser.parse_args()
 
@@ -105,6 +105,18 @@ class MyStorage(object):
             fp.close()
         return
 
+    def klobber(self, bucket, files):
+        sys.stderr.write('Klobber(%s):\n' % bucket)
+        self.bucket = self.conn.get_bucket(bucket)
+        for file in files:
+            key = Key(self.bucket)
+            if not key:
+                continue
+            key.key = file
+            print key.name
+            #self.bucket.delete_key(key)
+        return
+        
 def main():
     myStorage = MyStorage(args.zone)
 
@@ -112,7 +124,8 @@ def main():
     if args.dir:     myStorage.dir(args.bucket)
     if args.get:     myStorage.get(args.bucket, args.get)
     if args.put:     myStorage.put(args.bucket, args.put)
-
+    if args.klobber: myStorage.klobber(args.bucket, args.klobber)
+    
     return
 
 if __name__ == '__main__': main()
