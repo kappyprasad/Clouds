@@ -113,6 +113,8 @@ class MyStorage(object):
             path = os.path.abspath(file)
             if path.startswith(target):
                 path = path[len(target)+1:]
+            else:
+                path = file
             key.key = path
             sys.stdout.write('\t%s\n' % path)
             fp = open(file)
