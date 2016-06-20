@@ -15,11 +15,13 @@ parser = argparse.ArgumentParser(description='David Edson\'s you beute bucket te
 
 parser.add_argument('-v', '--verbose', action='store_true', help='show verbose detail')
 parser.add_argument('-z', '--zone',    action='store',      help='AWS Region', default=os.environ['AWS_REGION'])
-parser.add_argument('-t', '--target',  action='store',      help='Target local directory', default='.')
+parser.add_argument('-t', '--target',  action='store',      help='Target local directory', default='.buckets')
 parser.add_argument('-b', '--bucket',  action='store',      help='The storage bucket name')
+parser.add_argument('-y', '--yes',     action='store_true', help='yes to klobber')
 
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('-l', '--list',     action='store_true', help='list all buckets')
+group.add_argument('-D', '--dump',     action='store_true', help='dump entire directory of bucket')
 group.add_argument('-d', '--dir',      action='store_true', help='directory of bucket')
 group.add_argument('-K', '--kinghit',  action='store_true', help='klobber all files in bucket')
 group.add_argument('-k', '--klobber',  action='store',      help='klobber file in bucket', nargs='*')
@@ -34,12 +36,16 @@ if args.verbose:
 
 class MyStorage(object):
 
-    def __init__(self, region):
+    def __init__(self, region, bucket=None, target=None):
         self.conn = boto.s3.connect_to_region(
             region,
             aws_access_key_id=os.environ['AWS_KEY'],
             aws_secret_access_key=os.environ['AWS_SECRET']
         )
+        if bucket:
+            self.bucket = self.conn.get_bucket(bucket)
+            sys.stderr.write('Bucket(%s):\n' % self.bucket.name)
+            self.target = '%s/%s/'%(target.rstrip('/'),bucket)
         return
 
     def __del__(self):
@@ -50,65 +56,72 @@ class MyStorage(object):
             print bucket.name
         return
 
-    def dir(self, bucket):
-        sys.stderr.write('Directory(%s):\n' % bucket)
-        self.bucket = self.conn.get_bucket(bucket)
+    def dir(self):
+        sys.stderr.write('Directory\n')
         for key in self.bucket:
             print key.name
         return
 
-    def get(self, bucket, files):
-        sys.stderr.write('Get(%s):\n' % bucket)
-        self.bucket = self.conn.get_bucket(bucket)
-        for file in files:
-            key = Key(self.bucket)
-            key.key = file
-            local = '%s/%s' % (args.target.rstrip('/'), file)
-            dir = os.path.dirname(local)
-            if not os.path.isdir(dir):
-                os.makedirs(dir)
-            fp = open(local, 'w')
-            key.get_contents_to_file(fp)
-            fp.close()
-            
-            est = pytz.timezone('Australia/Sydney')
-            gmt = pytz.timezone('GMT')
-            tzf = '%Y-%m-%d %H:%M:%S %Z%z'
-            
-            #print 'last_modified=', key.last_modified
-            dt = datetime.strptime(key.last_modified, "%a, %d %b %Y %H:%M:%S %Z")
-            #print 'dt=', dt.strftime(tzf)
-            
-            dt = gmt.localize(dt)
-            adt = est.normalize(dt.astimezone(est))
-            #print 'adt=', adt.strftime(tzf)
+    def getFile(self, file):
+        key = Key(self.bucket)
+        key.key = file
+        if not key:
+            return
+        local = '%s/%s' % (self.target.rstrip('/'), file)
+        dir = os.path.dirname(local)
+        if not os.path.isdir(dir):
+            os.makedirs(dir)
+        fp = open(local, 'w')
+        key.get_contents_to_file(fp)
+        fp.close()
+        
+        est = pytz.timezone('Australia/Sydney')
+        gmt = pytz.timezone('GMT')
+        tzf = '%Y-%m-%d %H:%M:%S %Z%z'
+        
+        #print 'last_modified=', key.last_modified
+        dt = datetime.strptime(key.last_modified, "%a, %d %b %Y %H:%M:%S %Z")
+        #print 'dt=', dt.strftime(tzf)
+        
+        dt = gmt.localize(dt)
+        adt = est.normalize(dt.astimezone(est))
+        #print 'adt=', adt.strftime(tzf)
 
-            t = time.mktime(adt.timetuple())
-            os.utime(local,(t,t))
+        t = time.mktime(adt.timetuple())
+        os.utime(local,(t,t))
 
-            sys.stdout.write('%s %s\n' %(adt.strftime(tzf),local))
-            
+        sys.stdout.write('%s %s\n' %(adt.strftime(tzf),local))
         return
-            
-    def put(self, bucket, files):
-        sys.stderr.write('Put(%s):\n' % bucket)
-        self.bucket = self.conn.get_bucket(bucket)
-        for local in files:
+        
+    def get(self, files):
+        sys.stderr.write('Get\n')
+        for file in files:
+            self.getFile(file)
+        return
+    
+    def dump(self):
+        sys.stderr.write('Dump\n')
+        for key in self.bucket:
+            self.getFile(key.name)
+        return
+        
+    def put(self, files):
+        for file in files:
+            sys.stderr.write('Put(%s)\n'%file)
             key = Key(self.bucket)
-            if args.target and local.startswith(args.target):
-                file = local.lstrip(args.target)
-            else:
-                file = local
-            key.key = file
-            sys.stdout.write('%s\n' % file)
-            fp = open(local)
+            target = os.path.abspath(self.target)
+            path = os.path.abspath(file)
+            if path.startswith(target):
+                path = path[len(target)+1:]
+            key.key = path
+            sys.stdout.write('\t%s\n' % path)
+            fp = open(file)
             key.set_contents_from_file(fp)
             fp.close()
         return
 
-    def klobber(self, bucket, files):
-        sys.stderr.write('Klobber(%s):\n' % bucket)
-        self.bucket = self.conn.get_bucket(bucket)
+    def klobber(self, files):
+        sys.stderr.write('Klobber\n')
         for file in files:
             key = Key(self.bucket)
             if not key:
@@ -118,27 +131,30 @@ class MyStorage(object):
             key.delete()
         return
 
-    def kinghit(self, bucket):
-        sys.stderr.write('Kinghit(%s):\n' % bucket)
-        self.bucket = self.conn.get_bucket(bucket)
+    def kinghit(self):
+        sys.stderr.write('Kinghit\n')
         for key in self.bucket:
             print key.name
             key.delete()
         return
 
 def main():
-    myStorage = MyStorage(args.zone)
+    myStorage = MyStorage(args.zone, args.bucket, args.target)
 
     if args.list:    myStorage.list()
-    if args.dir:     myStorage.dir(args.bucket)
-    if args.get:     myStorage.get(args.bucket, args.get)
-    if args.put:     myStorage.put(args.bucket, args.put)
-    if args.klobber: myStorage.klobber(args.bucket, args.klobber)
+    if args.dir:     myStorage.dir()
+    if args.dump:    myStorage.dump()
+    if args.get:     myStorage.get(args.get)
+    if args.put:     myStorage.put(args.put)
+    if args.klobber: myStorage.klobber(args.klobber)
     
     if args.kinghit:
-        awooga = raw_input("are you sure ? (yes/no) >")
+        if args.yes:
+            awooga = 'yes'
+        else:
+            awooga = raw_input("are you sure ? (yes/no) >")
         if awooga == 'yes':
-            myStorage.kinghit(args.bucket)
+            myStorage.kinghit()
     
     return
 
