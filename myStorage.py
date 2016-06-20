@@ -114,7 +114,7 @@ class MyStorage(object):
                 continue
             key.key = file
             print key.name
-            #self.bucket.delete_key(key)
+            key.delete()
         return
         
 def main():
