@@ -21,6 +21,7 @@ parser.add_argument('-b', '--bucket',  action='store',      help='The storage bu
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('-l', '--list',     action='store_true', help='list all buckets')
 group.add_argument('-d', '--dir',      action='store_true', help='directory of bucket')
+group.add_argument('-K', '--kinghit',  action='store_true', help='klobber all files in bucket')
 group.add_argument('-k', '--klobber',  action='store',      help='klobber file in bucket', nargs='*')
 group.add_argument('-g', '--get',      action='store',      help='get file from bucket',   nargs='*')
 group.add_argument('-p', '--put',      action='store',      help='put file in bucket',     nargs='*')
@@ -116,7 +117,15 @@ class MyStorage(object):
             print key.name
             key.delete()
         return
-        
+
+    def kinghit(self, bucket):
+        sys.stderr.write('Kinghit(%s):\n' % bucket)
+        self.bucket = self.conn.get_bucket(bucket)
+        for key in self.bucket:
+            print key.name
+            key.delete()
+        return
+
 def main():
     myStorage = MyStorage(args.zone)
 
@@ -125,6 +134,11 @@ def main():
     if args.get:     myStorage.get(args.bucket, args.get)
     if args.put:     myStorage.put(args.bucket, args.put)
     if args.klobber: myStorage.klobber(args.bucket, args.klobber)
+    
+    if args.kinghit:
+        awooga = raw_input("are you sure ? (yes/no) >")
+        if awooga == 'yes':
+            myStorage.kinghit(args.bucket)
     
     return
 
