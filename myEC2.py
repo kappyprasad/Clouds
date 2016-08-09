@@ -82,6 +82,8 @@ class MyEC2(MyObject):
         return results
             
     def add(self,instance):
+        #print json.dumps(dir(instance),indent=4)
+        #quit
         jnstance = {
             '@name'         : '%s'%instance.tags['Name'],
             '@id'           : '%s'%instance.id,
@@ -123,8 +125,10 @@ def main():
         json.dump(myEC2.find(args.id),output)
     else:
         json.dump(myEC2.process(),output)
-    
-    output.close()
+
+    if args.output:
+        print args.output
+        output.close()
     return
 
 if __name__ == '__main__': main()
