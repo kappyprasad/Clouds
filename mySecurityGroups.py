@@ -94,6 +94,7 @@ def main():
         json.dump(myRoutes.sgs(), output, indent=4 if args.indent else None)
 
     if args.output:
+        print args.output
         output.close()
     return
 

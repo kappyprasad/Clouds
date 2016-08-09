@@ -106,8 +106,10 @@ def main():
         output=sys.stdout
 
     json.dump(myELB.process(),output)
-    
-    output.close()
+
+    if args.output:
+        print args.output
+        output.close()
     return
 
 if __name__ == '__main__': main()
