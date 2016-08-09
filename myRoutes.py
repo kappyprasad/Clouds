@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys, re, os, argparse, uuid, StringIO, json
+import sys, re, os, argparse, uuid, StringIO, json, xmltodict
 
 import boto.route53
 
@@ -12,6 +12,7 @@ def argue():
     parser = argparse.ArgumentParser(description='David Edson\'s you beute EC2 testerer')
 
     parser.add_argument('-v', '--verbose',   action='store_true', help='show verbose detail')
+    parser.add_argument('-i', '--indent',    action='store_true', help='indent content')
     parser.add_argument(      '--awsKey',    action='store',      help='AWS user Key',      default=os.environ['AWS_KEY'])
     parser.add_argument(      '--awsSecret', action='store',      help='AWS secret Key',    default=os.environ['AWS_SECRET'])
     parser.add_argument('-z', '--zone',      action='store',      help='AWS Region',        default=os.environ['AWS_REGION'])
@@ -56,12 +57,9 @@ class MyRoutes(MyObject):
         zones = results['zones']['zone']
         for zone in self.conn.get_zones():
             zones.append({
-            '@name'         : '%s'%zone.name,
-            '@id'           : '%s'%zone.id,
+                '@name'         : '%s'%zone.name,
+                '@id'           : '%s'%zone.id,
             })
-
-            sys.stderr.write(str(dir(zone)))
-            break
         return results
     
     def routes(self,zone):
@@ -72,8 +70,14 @@ class MyRoutes(MyObject):
         }
         routes = results['routes']['route']
         zone = self.conn.get_zone(zone)
+        if not zone:
+            return
         for route in zone.get_records():
-            routes.append(route)
+            routes.append({
+                '@name'         : '%s'%route.name,
+                '@id'           : '%s'%route.identifier,
+                'records'       : xmltodict.parse(route.to_xml()),
+            })
         return results
 
 ####################################################################################################
@@ -93,9 +97,9 @@ def main():
         output=sys.stdout
     
     if args.dir:
-        json.dump(myRoutes.zones(), output)
+        json.dump(myRoutes.zones(), output, indent=4 if args.indent else None)
     if args.routes:
-        json.dump(myRoutes.routes(args.zone), output)
+        json.dump(myRoutes.routes(args.routes), output, indent=4 if args.indent else None)
 
     if args.output:
         output.close()
