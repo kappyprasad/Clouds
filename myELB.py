@@ -79,9 +79,11 @@ class MyELB(MyObject):
         
         for lb in self.conn.get_all_load_balancers():
             elb = {
-                '@name' : lb.name,
-                '@vpc_id' : lb.vpc_id,
-                '@dns_name' : lb.dns_name
+                '@name'            : lb.name,
+                '@vpc_id'          : lb.vpc_id,
+                '@dns_name'        : lb.dns_name,
+                '@created_time'    : lb.created_time,
+                'security_groups'  : self.sgs(lb)
             }
                 
             self._dir(lb,elb)
@@ -92,7 +94,14 @@ class MyELB(MyObject):
             elbs.append(elb)
         
         return results
-    
+
+    def sgs(self,lb):
+        results = { 'security_group' : [] }
+        sg = results['security_group']
+        for s in lb.security_groups:
+            sg.append({ '@id' : s })
+        return results
+
 def main():
     myELB = MyELB(
         args.zone, 
