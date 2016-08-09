@@ -8,21 +8,24 @@ from myAWS import MyObject
 
 # http://boto.readthedocs.org/en/latest/ec2_tut.html
 
-parser = argparse.ArgumentParser(description='David Edson\'s you beute vpc testerer')
-
-parser.add_argument('-v', '--verbose',   action='store_true', help='show verbose detail')
-parser.add_argument(      '--awsKey',    action='store',      help='AWS user Key',      default=os.environ['AWS_KEY'])
-parser.add_argument(      '--awsSecret', action='store',      help='AWS secret Key',    default=os.environ['AWS_SECRET'])
-parser.add_argument('-z', '--zone',      action='store',      help='AWS Region',        default=os.environ['AWS_REGION'])
-parser.add_argument('-o', '--output',    action='store',      help='output to file')
-parser.add_argument('-d', '--dir',       action='store_true', help='full directory listing of targets')
-parser.add_argument('-t', '--tags',      action='store_true', help='show tags of targets')
-parser.add_argument('-i', '--id',        action='store',      help='id of vpc, will be introspected if not provided')
-
-args = parser.parse_args()
-
-if args.verbose:
+def argue():
+    parser = argparse.ArgumentParser(description='David Edson\'s you beute vpc testerer')
+        
+    parser.add_argument('-v', '--verbose',   action='store_true', help='show verbose detail')
+    parser.add_argument(      '--awsKey',    action='store',      help='AWS user Key',      default=os.environ['AWS_KEY'])
+    parser.add_argument(      '--awsSecret', action='store',      help='AWS secret Key',    default=os.environ['AWS_SECRET'])
+    parser.add_argument('-z', '--zone',      action='store',      help='AWS Region',        default=os.environ['AWS_REGION'])
+    parser.add_argument('-o', '--output',    action='store',      help='output to file')
+    parser.add_argument('-d', '--dir',       action='store_true', help='full directory listing of targets')
+    parser.add_argument('-t', '--tags',      action='store_true', help='show tags of targets')
+    parser.add_argument('-i', '--id',        action='store',      help='id of vpc, will be introspected if not provided')
+    
+    args = parser.parse_args()
+    
+    if args.verbose:
         sys.stderr.write('args : %s' % vars(args))
+
+    return args
 
 class MyVPC(MyObject):
 
@@ -76,10 +79,12 @@ class MyVPC(MyObject):
         reservations = self.conn.get_all_reservations(vpc_ids=[id])
         vpcs.append(self.add(reservations[0].vpcs[0]))
         return results
-            
+
     def add(self,vpc):
         jvpc = {
-            
+            '@cidr_block' : vpc.cidr_block,
+            '@id'         : vpc.id,
+            '@state'      : vpc.state, 
         }
         self._dir(vpc,jvpc)
         self._tags(vpc,jvpc)
@@ -87,6 +92,9 @@ class MyVPC(MyObject):
         return jvpc
 
 def main():
+    global args
+    args = argue()
+    
     myVPC = MyVPC(
         args.zone, 
         args.awsKey, 
@@ -102,8 +110,10 @@ def main():
         json.dump(myVPC.find(args.id),output)
     else:
         json.dump(myVPC.process(),output)
-    
-    output.close()
+
+    if args.output:
+        print args.output
+        output.close()
     return
 
 if __name__ == '__main__': main()

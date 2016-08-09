@@ -17,6 +17,8 @@ class MyObject(object):
         } 
         dirs=target['dirs']['dir']
         for key in dir(source):
+            if key.startswith('_'):
+                continue
             text = '%s'%getattr(source,key)
             dirs.append({
                 '@name' : '%s'%key,

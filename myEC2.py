@@ -19,6 +19,7 @@ def argue():
     parser.add_argument('-o', '--output',    action='store',      help='output to file')
     parser.add_argument('-d', '--dir',       action='store_true', help='full directory listing of targets')
     parser.add_argument('-t', '--tags',      action='store_true', help='show tags of targets')
+    parser.add_argument('-I', '--interface', action='store_true', help='included interfaces')
     parser.add_argument('-i', '--id',        action='store',      help='id of instance, will be introspected if not provided')
     
     args = parser.parse_args()
@@ -102,7 +103,8 @@ class MyEC2(MyObject):
         }
         self._dir(instance,jnstance)
         self._tags(instance,jnstance)
-        self._interfaces(instance,jnstance)
+        if args.interface:
+            self._interfaces(instance,jnstance)
         return jnstance
 
 ####################################################################################################

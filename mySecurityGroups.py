@@ -55,11 +55,17 @@ class MySecurityGroups(MyObject):
         }
         sgs = results['sgs']['sg']
         for sg in self.conn.get_all_security_groups():
-            sgs.append({
+            jsg = {
                 '@name'         : '%s'%sg.name,
                 '@id'           : '%s'%sg.id,
+                '@vpc_id'       : '%s'%sg.vpc_id,
+                '@owner_id'     : '%s'%sg.owner_id,
+                '@description'  : '%s'%sg.description,
                 'rules'         : self.rules(sg),
-            })
+            }
+            sgs.append(jsg)
+            self._dir(sg,jsg)
+            self._tags(sg,jsg)
         return results
 
     def rules(self,sg):
@@ -90,8 +96,7 @@ def main():
     else:
         output=sys.stdout
     
-    if args.dir:
-        json.dump(myRoutes.sgs(), output, indent=4 if args.indent else None)
+    json.dump(myRoutes.sgs(), output, indent=4 if args.indent else None)
 
     if args.output:
         print args.output
