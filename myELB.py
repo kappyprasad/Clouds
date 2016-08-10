@@ -9,21 +9,23 @@ from myAWS import MyObject
 
 # http://boto.readthedocs.org/en/latest/ec2_tut.html
 
-parser = argparse.ArgumentParser(description='David Edson\'s you beute EC2 testerer')
+def argue():
+    parser = argparse.ArgumentParser(description='David Edson\'s you beute EC2 testerer')
 
-parser.add_argument('-v', '--verbose',   action='store_true', help='show verbose detail')
-parser.add_argument(      '--awsKey',    action='store',      help='AWS user Key',      default=os.environ['AWS_KEY'])
-parser.add_argument(      '--awsSecret', action='store',      help='AWS secret Key',    default=os.environ['AWS_SECRET'])
-parser.add_argument('-z', '--zone',      action='store',      help='AWS Region',        default=os.environ['AWS_REGION'])
-parser.add_argument('-o', '--output',    action='store',      help='output to file')
-parser.add_argument('-d', '--dir',       action='store_true', help='full directory listing of targets')
-parser.add_argument('-t', '--tags',      action='store_true', help='show tags of targets')
-parser.add_argument('-i', '--id',        action='store',      help='id of instance, will be introspected if not provided')
-
-args = parser.parse_args()
-
-if args.verbose:
+    parser.add_argument('-v', '--verbose',   action='store_true', help='show verbose detail')
+    parser.add_argument(      '--awsKey',    action='store',      help='AWS user Key',      default=os.environ['AWS_KEY'])
+    parser.add_argument(      '--awsSecret', action='store',      help='AWS secret Key',    default=os.environ['AWS_SECRET'])
+    parser.add_argument('-z', '--zone',      action='store',      help='AWS Region',        default=os.environ['AWS_REGION'])
+    parser.add_argument('-o', '--output',    action='store',      help='output to file')
+    parser.add_argument('-d', '--dir',       action='store_true', help='full directory listing of targets')
+    parser.add_argument('-t', '--tags',      action='store_true', help='show tags of targets')
+    parser.add_argument('-i', '--id',        action='store',      help='id of instance, will be introspected if not provided')
+    
+    args = parser.parse_args()
+    
+    if args.verbose:
         sys.stderr.write('args : %s' % vars(args))
+    return args
 
 ############################################################################################################################        
 class MyELB(MyObject):
@@ -82,6 +84,8 @@ class MyELB(MyObject):
                 '@name'            : lb.name,
                 '@vpc_id'          : lb.vpc_id,
                 '@dns_name'        : lb.dns_name,
+                '@scheme'          : lb.scheme,
+                '@health_check'    : str(lb.health_check),
                 '@created_time'    : lb.created_time,
                 'security_groups'  : self.sgs(lb)
             }
@@ -103,6 +107,9 @@ class MyELB(MyObject):
         return results
 
 def main():
+    global args
+    args = argue()
+        
     myELB = MyELB(
         args.zone, 
         args.awsKey, 
