@@ -86,7 +86,7 @@ class MyEC2(MyObject):
         #print json.dumps(dir(instance),indent=4)
         #quit
         jnstance = {
-            '@name'         : '%s'%instance.tags['Name'],
+            '@name'         : '%s'%instance.tags['Name'] if 'Name' in instance.tags.keys() else '',
             '@id'           : '%s'%instance.id,
             '@ami'          : '%s'%instance.image_id,
             '@architecture' : '%s'%instance.architecture,
