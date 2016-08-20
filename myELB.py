@@ -87,7 +87,8 @@ class MyELB(MyObject):
                 '@scheme'          : lb.scheme,
                 '@health_check'    : str(lb.health_check),
                 '@created_time'    : lb.created_time,
-                'security_groups'  : self.sgs(lb)
+                'security_groups'  : self.sgs(lb),
+                'listeners'        : self.listeners(lb),
             }
                 
             self._dir(lb,elb)
@@ -106,6 +107,18 @@ class MyELB(MyObject):
             sg.append({ '@id' : s })
         return results
 
+    def listeners(self,lb):
+        results = { 'listener' : [] }
+        ls = results['listener']
+        for l in lb.listeners:
+            ls.append({
+                '@in_port'  : str(l[0]),
+                '@in_type'  : str(l[2]),
+                '@out_port' : str(l[1]),
+                '@out_type' : str(l[3]),
+            })
+        return results
+    
 def main():
     global args
     args = argue()
