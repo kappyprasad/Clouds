@@ -15,11 +15,3 @@ def environment(app):
     ]:
         os.environ[key] = password(app,key)
  
-def main():
-    for fn in os.listdir('.'):
-        if fn.endswith('.py'):
-            print fn
-            
-    return
-          
-if __name__ == '__main__' : main()
